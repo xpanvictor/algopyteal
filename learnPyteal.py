@@ -20,3 +20,16 @@ program = Cond(
     [Txn.on_completion() == OnComplete.NoOp, on_no_op],
     # If none of the conditions are satisfied, code terminates with error
 )
+
+#Conditionals with if else
+
+code = Seq(
+    If(App.globalGet(Bytes("count")) == Int(100))
+    .Then(
+        App.globalPut(Bytes("100th caller"), Txn.sender())
+    ).Else(
+        App.globalPut(Bytes("Not 100th caller"), Txn.sender())
+    ),
+    App.globalPut(Bytes("count"), App.globalGet(Bytes("count")) + Int(1)),
+    Approve()
+)

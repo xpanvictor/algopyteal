@@ -10,6 +10,18 @@ z = Substring(y, Int(2), Len(y))
 # Logging to the chain
 Log(x)
 
+# For loops
+
+i = ScratchVar(TealType.uint64)
+
+on_create = Seq(
+    For(i.store(Int(0)), i < Int(16), i.store(i.load() + Int(1)))
+    .Do(
+        App.globalPut(Concat(Bytes("Index"), Itob(i.load())), Int(1))
+    ),
+    Approve()
+)
+
 # Conditionals with cond
 program = Cond(
     [Txn.application_id() == Int(0), on_create],
@@ -21,7 +33,7 @@ program = Cond(
     # If none of the conditions are satisfied, code terminates with error
 )
 
-#Conditionals with if else
+# Conditionals with if else
 
 code = Seq(
     If(App.globalGet(Bytes("count")) == Int(100))
@@ -33,3 +45,4 @@ code = Seq(
     App.globalPut(Bytes("count"), App.globalGet(Bytes("count")) + Int(1)),
     Approve()
 )
+

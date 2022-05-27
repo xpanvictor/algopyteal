@@ -65,18 +65,3 @@ def recursiveIsEven(i):
         .Then(Int(0))
         .Else(recursiveIsEven(i - Int(2)))
     )
-
-
-# Escrow account transaction
-Seq(
-    InnerTxnBuilder.Begin(),
-    InnerTxnBuilder.SetFields(
-        {
-            TxnField.type_enum: TxnType.Payment,
-            TxnField.receiver: Txn.sender(),
-            TxnField.amount: Int(1_000_000),
-        }
-    ),
-    InnerTxnBuilder.Submit()
-    # Sends 1Algo from the app escrow account to the sender account
-)

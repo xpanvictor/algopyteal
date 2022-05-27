@@ -18,7 +18,14 @@ on_create = Seq(
             on_create_start_time < on_create_end_time
         )
     ),
-    Approve()
+    Approve(),
+)
+
+# On call routing logic
+on_call_method = Txn.application_args[0]
+on_call = Cond(
+    [on_call_method == Bytes('setup'), on_setup],
+    [on_call_method == Bytes('bid'), on_bid]
 )
 
 # Top level routing

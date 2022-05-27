@@ -55,3 +55,13 @@ def isEven(i):
 
 App.globalPut(Bytes("value_is_even"), isEven(Int(10)))
 
+
+@Subroutine(TealType.uint64)
+def recursiveIsEven(i):
+    return (
+        If(i == Int(0))
+        .Then(Int(1))
+        .ElseIf(i == Int(1))
+        .Then(Int(0))
+        .Else(recursiveIsEven(i - Int(2)))
+    )

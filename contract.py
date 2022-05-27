@@ -9,6 +9,7 @@ reserve_amount_key = Bytes("reserve_amount_key")
 min_bid_increment_key = Bytes("min_bid_increment_key")
 lead_bid_account_key = Bytes("lead_bid_amount_key")
 lead_bid_amount_key = Bytes("lead_bid_amount_key")
+num_bids_key = Bytes("nums_bid_key")
 
 # On create code logic
 on_create_start_time = Btoi(Txn.application_args[2])
@@ -75,9 +76,22 @@ on_bid = Seq(
         App.globalGet(lead_bid_amount_key)
     ).Then(
         Seq(
-            If(App.globalGet(lead_bid_account_key))
+            If(App.globalGet(lead_bid_account_key) != Global.zero_address())
+            .Then(
+                repayPreviousLeadBidder(
+                    App.globalGet(lead_bid_account_key),
+                    App.globalGet(lead_bid_amount_key)
+                )
+            ),
+            # Make new lead account and amount
+            App.globalPut(lead_bid_account_key, Gtxn[on_bid_txn_index].sender()),
+            App.globalPut(lead_bid_amount_key, Gtxn[on_bid_txn_index].amount()),
+            App.globalPut(num_bids_key, App.globalGet(num_bids_key) + Int(1)),
+            Approve(),
         )
-    )
+    ),
+    # we've used guard clause conditional and accept similar to return true, else return false
+    Reject(),
 )
 
 # On call routing logic

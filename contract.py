@@ -101,6 +101,9 @@ on_call = Cond(
     [on_call_method == Bytes('bid'), on_bid]
 )
 
+# On Delete code logic
+on_delete = Seq()
+
 # Top level routing
 program = Cond(
     [Txn.application_id() == Int(0), on_create],

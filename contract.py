@@ -102,7 +102,27 @@ on_call = Cond(
 )
 
 # On Delete code logic
-on_delete = Seq()
+on_delete = Seq(
+    If(Global.latest_timestamp() < App.globalGet(start_time_key))
+    .Then(
+        Seq(
+            # The auction hasn't started, and it's okay to delete
+            # First we ensure entity deleting is authorised
+            Assert(
+                Or(
+                    Txn.sender() == App.globalGet(seller_key),
+                    Txn.sender() == Global.creator_address()
+                )
+            ),
+            # Now that we're sure it's either seller or creator
+            # If the nft has been put into by seller, return it
+            closNFTTo(App.globalGet(nft_id_key), App.globalGet(seller_key)),
+            # If the auction still has funds left by the creator
+            closeAccountTo(App.globalGet(seller_key)),
+            Approve()
+        )
+    ),
+)
 
 # Top level routing
 program = Cond(

@@ -122,6 +122,47 @@ on_delete = Seq(
             Approve()
         )
     ),
+    # To continue with other deletes
+    If(App.globalGet(end_time_key) <= Global.latest_timestamp()).Then(
+        Seq(
+            # the auction has ended, pay out assets
+            If(App.globalGet(lead_bid_account_key) != Global.zero_address())
+            .Then(
+                If(
+                    App.globalGet(lead_bid_amount_key)
+                    >= App.globalGet(reserve_amount_key)
+                )
+                .Then(
+                    # the auction was successful: send lead bid account the nft
+                    closeNFTTo(
+                        App.globalGet(nft_id_key),
+                        App.globalGet(lead_bid_account_key),
+                    )
+                )
+                .Else(
+                    Seq(
+                        # the auction was not successful because the reserve was not met: return
+                        # the nft to the seller and repay the lead bidder
+                        closeNFTTo(
+                            App.globalGet(nft_id_key), App.globalGet(seller_key)
+                        ),
+                        repayPreviousLeadBidder(
+                            App.globalGet(lead_bid_account_key),
+                            App.globalGet(lead_bid_amount_key),
+                        ),
+                    )
+                )
+            )
+            .Else(
+                # the auction was not successful because no bids were placed: return the nft to the seller
+                closeNFTTo(App.globalGet(nft_id_key), App.globalGet(seller_key))
+            ),
+            # send remaining funds to the seller
+            closeAccountTo(App.globalGet(seller_key)),
+            Approve(),
+        )
+    ),
+    Reject(),
 )
 
 # Top level routing
